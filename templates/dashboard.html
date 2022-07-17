@@ -1,0 +1,7 @@
+{% extends 'layout.html' %} {% block title %} Dashboard {% endblock %} {% block body %}
+<h1>
+    Dashboard
+</h1>
+<small>Welcome {{session.username}}</small>
+<br>
+<a class="btn btn-success mt-1" href="{{url_for('add_article')}}" role="button">Add Article</a> {% endblock %}

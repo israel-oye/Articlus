@@ -1,0 +1,14 @@
+{% extends 'layout.html' %} {% block title%} Article {% endblock%} {% block body %} {% for article in allArticles %}
+<div class="mt-4 p-5 bg-dark bg-gradient text-white rounded">
+
+    <ul class="list-group bg-transparent list-unstyled">
+        <li class="list-group-item bg-transparent">
+            <a class="text-decoration-none border-" href="articles/{{article.id}}">
+                <h3>Article {{article.id}}</h3>
+            </a>
+            <h6 class="text-light">By {{article.author}}</h6>
+        </li>
+    </ul>
+</div>
+
+{% endfor %} {% endblock %}
