@@ -1,8 +1,10 @@
 {% extends 'layout.html' %} {% block body %}
-<h2>
-    Article {{page.id}} by {{page.author}}
+<h2 class="mb-3">
+    {{article.title}}
 </h2>
-<p>
-    {{page.body}}
-</p>
+<div class="rounded-2 bg-light shadow-lg py-4">
+    <p> </p>
+    {{article.body}}
+    <p> </p>
+</div>
 {% endblock %}
