@@ -20,8 +20,8 @@
         <td>{{article['title']}}</td>
         <td>{{article['author']}}</td>
         <td>{{article['date_of_creation']}}</td>
-        <td><a href="/edit_article/{{article['id']}}" class="btn btn-primary float-end">Edit</a></td>
-        <td><a href="#" class="btn btn-danger float-end">Delete</a></td>
+        <td><a href="/edit_article/{{article['id']}}" class="btn btn-primary float-end" title="Edit article"><i class="fa-solid fa-pen-to-square"></i></a></td>
+        <td><a href="#" class="btn btn-danger float-end" title="Delete article"><i class="fa-solid fa-trash-can"></i></a></td>
     </tr>
     {% endfor %}
 

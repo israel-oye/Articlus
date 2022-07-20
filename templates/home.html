@@ -1,7 +1,14 @@
 {% extends 'layout.html' %} {% block title%} Home {% endblock%} {% block body %}
-<div class="mt-4 p-5 bg-secondary text-white rounded">
-    <h1>Create and edit your thoughts!</h1>
-    <p>Welcome to <a class="text-decoration-none link-light" href="/">articlus</a>
+<div class="mt-4 p-5 bg-secondary text-white rounded text-center">
+    <h1>Create and edit your thoughts with articlus!</h1>
+    <p class="mt-4 lh-lg">Welcome to <a class="text-decoration-none link-light" href="/"><span class="fw-bolder font-monospace text-white-50">articlus.</span></a> Sign up today and express yourself in absolute privacy. Lorem Ipsum you think some, you write some and dolor sit
+        amet. Proudly built with Flask and Jinja 2.0
     </p>
+    {% if session.logged_in == NULL %}
+    <div class="pb-2">
+        <a href="{{url_for('register')}}" class="btn btn-primary btn-lg mx-1 mt-5">Register</a>
+        <a href="{{url_for('login')}}" class="btn btn-success btn-lg mx-1 mt-5">Hop in</a> {% endif %}
+    </div>
+
 </div>
 {% endblock %}

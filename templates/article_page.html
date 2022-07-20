@@ -1,10 +1,11 @@
-{% extends 'layout.html' %} {% block body %}
-<h2 class="mb-3">
-    {{article.title}}
-</h2>
-<div class="rounded-2 bg-light shadow-lg py-4">
-    <p> </p>
-    {{article.body}}
-    <p> </p>
+{% extends 'layout.html' %}{% block title %} Article page {% endblock %} {% block body %}
+
+<br>
+<div class="rounded-2 bg-light shadow-lg py-4 px-3">
+    <h2 class="mb-1"> {{article.title}} </h2>
+    <small><i>Created by <a href="{{url_for('dashboard')}}" class="text-decoration-none"> {{article.author}}</a></i> on {{article.date_of_creation}}</small>
+    <hr>
+    <article class="mt-4"> {{article.body | safe}} </article>
+
 </div>
 {% endblock %}

@@ -39,12 +39,14 @@ def home():
 
 @app.route('/articles')
 def article():
-    if 'logged_in' in session:
-        return render_template("article.html", allArticles=all_articles)
-    else:
-        abort(401)
+    cursor = mysql.connection.cursor()
+    result = cursor.execute("SELECT * FROM articles WHERE author = %s", (session['username'],))
+    
+    articles = cursor.fetchall()
+    cursor.close()
 
-        # return "<h1> Unauthorized access error</h1>"
+    return render_template("article.html", allArticles=articles)
+    
 
 @app.route('/about')
 def about():
@@ -55,10 +57,16 @@ def about():
 def article_page(id):
     requested_article = None
 
-    for articl in all_articles:
-        if articl['id'] == id:
-            requested_article = articl
-            return render_template("article_page.html", page=requested_article)
+    cursor = mysql.connection.cursor()
+    result = cursor.execute("SELECT * FROM articles WHERE author = %s", (session['username'],))
+    
+    articles = cursor.fetchall()
+    cursor.close()
+
+    for article in articles:
+        if article['id'] == id:
+            requested_article = article
+            return render_template("article_page.html", article=requested_article)
 
 class RegistrationForm(Form):
     name = StringField('Name', [validators.DataRequired(), validators.Length(min=2, max=50)], render_kw={'autofocus': True})
@@ -150,7 +158,6 @@ def logout():
 @is_logged_in
 def dashboard():
     
-    
     cursor = mysql.connection.cursor()
     result = cursor.execute("SELECT * FROM articles WHERE author = %s", (session['username'],))
     
@@ -161,7 +168,7 @@ def dashboard():
         return render_template("dashboard.html", user_articles=articles)
     else:
         msg = f"Oops. User: {session['username']} does not have any article"
-        return render_template("dashboard.html")
+        return render_template("dashboard.html", msg=msg, is_empty = True)
     
 
 class ArticleForm(Form):
@@ -171,11 +178,11 @@ class ArticleForm(Form):
 @app.route("/add_article", methods=['GET', 'POST'])
 @is_logged_in
 def add_article():
-    new_post_form = ArticleForm(request.form)
+    edit_form = ArticleForm(request.form)
 
-    if request.method == 'POST' and new_post_form.validate_on_submit():
-        title = new_post_form.title.data
-        post_body = new_post_form.body.data
+    if request.method == 'POST' and edit_form.validate_on_submit():
+        title = edit_form.title.data
+        post_body = edit_form.body.data
 
         cursor = mysql.connection.cursor()
         cursor.execute("INSERT INTO articles (title, body, author) VALUES (%s, %s, %s)", (title, post_body, session['username']))
@@ -185,9 +192,31 @@ def add_article():
         flash("Article created", 'success')
         return redirect(url_for("dashboard"))
 
-    return render_template("new_article.html", form=new_post_form)  
+    return render_template("new_article.html", form=edit_form)  
 
+@app.route("/edit_article/<int:id>", methods=['GET', 'POST'])
+@is_logged_in
+def edit_article(id):
+    cursor = mysql.connection.cursor()
+    result = cursor.execute("SELECT * FROM articles WHERE id = %s;", (id,))
+    article = cursor.fetchone()
 
+    edit_form = ArticleForm(request.form)
+    edit_form.title.data = article['title']
+    edit_form.body.data = article['body']
+
+    if request.method == 'POST' and edit_form.validate_on_submit():
+        title = request.form['title']
+        post_body = request.form['body']
+
+        cursor.execute("UPDATE articles SET title=%s, body=%s WHERE id = %s;", (title, post_body, id))
+        mysql.connection.commit()
+        cursor.close()
+
+        flash("Article edited", 'success')
+        return redirect(url_for("dashboard"))
+
+    return render_template("edit_article.html", form=edit_form)
 
 if __name__ == "__main__":
     app.run(debug=True)
