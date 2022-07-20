@@ -1,17 +1,9 @@
 {% extends 'layout.html' %} {% block title %} New Article {%endblock%} {% block body %}
-<!-- <script>
+<script>
     tinymce.init({
         selector: '#mytextarea',
         menubar: false
     });
-</script> -->
-
-<script>
-    ClassicEditor
-        .create(document.querySelector('#mytextarea'))
-        .catch(error => {
-            console.error(error);
-        });
 </script>
 
 <h1>Add Article</h1>
