@@ -21,7 +21,14 @@
         <td>{{article['author']}}</td>
         <td>{{article['date_of_creation']}}</td>
         <td><a href="/edit_article/{{article['id']}}" class="btn btn-primary float-end" title="Edit article"><i class="fa-solid fa-pen-to-square"></i></a></td>
-        <td><a href="#" class="btn btn-danger float-end" title="Delete article"><i class="fa-solid fa-trash-can"></i></a></td>
+        <td>
+            <form action="{{url_for('delete_article', id=article['id'])}}" method="post" onSubmit="return confirm('Are you sure you want to delete the article?');">
+                <input type="hidden" name="_method" value="delete">
+                <button type="submit" class="btn btn-danger float-end" title="Delete article"><i class="fa-solid fa-trash-can"></i></button>
+
+
+            </form>
+        </td>
     </tr>
     {% endfor %}
 
