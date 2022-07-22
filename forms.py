@@ -14,4 +14,4 @@ class RegistrationForm(Form):
 
 class ArticleForm(Form):
     title = StringField('Title', [validators.InputRequired()])
-    body = TextAreaField('')
+    body = TextAreaField('Body', [validators.Length(min=1)], render_kw={'id': 'mytextarea', 'placeholder': "Unleash the Krakken!"})
