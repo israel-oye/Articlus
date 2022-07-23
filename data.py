@@ -60,7 +60,6 @@ def get_article(id):
         
         return dict(article)
         
-
 def update_article(id, title, body):
     query = "UPDATE articles SET title = ?, body = ? WHERE id = ?"
 
@@ -73,7 +72,6 @@ def delete_article(article_id):
 
     with closing(connection.cursor()) as cursor:
         cursor.execute(query, (article_id,))
-
 
 
 def close_connection():
