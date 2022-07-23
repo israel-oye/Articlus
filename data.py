@@ -1,3 +1,4 @@
+import os
 import sqlite3
 from contextlib import closing
 
@@ -7,7 +8,9 @@ def connect_database():
     global connection
 
     if not connection:
-        connection = sqlite3.connect("./data.sqlite", check_same_thread=False)
+        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+        db_path = os.path.join(BASE_DIR, 'data.sqlite')
+        connection = sqlite3.connect(db_path, check_same_thread=False)
         connection.row_factory = sqlite3.Row
 
 def register_user(name, username, email, password):
