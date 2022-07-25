@@ -1,15 +1,17 @@
 import os
+from dotenv import load_dotenv
 import sqlite3
 from contextlib import closing
 
 connection = None
+load_dotenv()
 
 def connect_database():
     global connection
 
     if not connection:
-        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-        db_path = os.path.join(BASE_DIR, 'data.sqlite')
+        
+        db_path = os.getenv("DATABASE_URL")
         connection = sqlite3.connect(db_path, check_same_thread=False)
         connection.row_factory = sqlite3.Row
 
