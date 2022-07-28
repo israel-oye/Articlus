@@ -2,6 +2,8 @@
 /articlus.sql
 /data.sqlite
 .env
+/data.py
+/articlus_db.db
 # Created by https://www.toptal.com/developers/gitignore/api/windows,python,flask,dotenv,visualstudiocode
 # Edit at https://www.toptal.com/developers/gitignore?templates=windows,python,flask,dotenv,visualstudiocode
 

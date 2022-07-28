@@ -3,9 +3,9 @@
     Dashboard
 </h1>
 <small>Welcome {{session.username}}</small>
-<br>
-<a class="btn btn-success mt-1" href="{{url_for('add_article')}}" role="button">Add Article</a> {% if is_empty %} {{msg}}
-<a class="btn btn-success mt-1" href="{{url_for('add_article')}}" role="button">Add new article</a> {% else %}
+<br> {% if is_empty %}
+<a class="btn btn-success mt-1" href="{{url_for('add_article')}}" role="button">Add Article</a> {{pass}} {% else %}
+<a class="btn btn-success mt-1" href="{{url_for('add_article')}}" role="button">Add new article</a>
 <table class="table table-secondary table-striped mt-3">
     <tr>
         <th>ID</th>

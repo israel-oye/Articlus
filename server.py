@@ -2,10 +2,12 @@ import os
 import html
 from functools import wraps
 from datetime import timedelta
+from turtle import title
 from dotenv import load_dotenv
 from forms import RegistrationForm, ArticleForm
-import data as db
+from models import Articles, Users
 from flask import Flask, abort, render_template, url_for, flash, redirect, request, session
+from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
 from passlib.hash import sha256_crypt
 
@@ -16,10 +18,13 @@ app = Flask(__name__)
 
 app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
 app.config['WTF_CSRF_ENABLED'] = False
+app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///articlus_db.db"
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.permanent_session_lifetime = timedelta(hours=3)
 
 
 csrf = CSRFProtect(app=app)
+db = SQLAlchemy(app)
 
 
 def is_logged_in(f):
@@ -45,32 +50,43 @@ def register():
     input_form = RegistrationForm(request.form)
 
     if request.method == 'POST' and input_form.validate_on_submit():
-        name = input_form.name.data
-        username = input_form.username.data
-        email = input_form.email.data
+        nm = input_form.name.data
+        uname = input_form.username.data
+        mail = input_form.email.data
         pwd = sha256_crypt.encrypt(str(input_form.password.data)) 
 
-        db.connect_database()
-        db.register_user(name=name, username=username, email=email, password=pwd)
+        user = Users.query.filter_by(username=uname).first()
+        # print(user)
+        if user is None:
+            user = Users(name=nm, username=uname, email=mail, password=pwd)
+            db.session.add(user)
+            db.session.commit()
 
-        flash("You are now registered and can login", 'success')
+        # db.connect_database()
+        # db.register_user(name=name, username=username, email=email, password=pwd)
 
-        return redirect(url_for('login'))
+            flash("You are now registered and can login", 'success')
+            return redirect(url_for('login'))
+        else:
+            flash("Username is taken!", "danger")
+            return redirect(url_for('register'))
 
     return render_template("register.html", form=input_form)
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
-    db.connect_database()
+    # db.connect_database()
 
     if request.method == 'POST':
         username = request.form['username']
         password_candidate = request.form['password']
 
-        user_data = db.fetch_data(username)
+        # user_data = db.fetch_data(username)
+
+        user_data = Users.query.filter_by(username=username).first()
 
         if user_data:    
-            password = user_data['password']
+            password = user_data.password
 
             if sha256_crypt.verify(password_candidate, password):
                 app.logger.info("Password matched")
@@ -94,10 +110,11 @@ def login():
 @app.route("/dashboard")
 @is_logged_in
 def dashboard():
-    db.connect_database() 
-    articles = db.get_articles(session['username'])
+    # db.connect_database() 
+    # articles = db.get_articles(session['username'])
+    articles = Articles.query.filter_by(author=session['username']).all()
 
-    if articles:
+    if len(articles) > 0:
         return render_template("dashboard.html", user_articles=articles)
     else:
         msg = f"Oops. User: {session['username']} does not have any article"
@@ -107,72 +124,88 @@ def dashboard():
 @is_logged_in
 def articles():
     
-    db.connect_database()
-    articles = db.get_articles(author=session['username'])
+    # db.connect_database()
+    # articles = db.get_articles(author=session['username'])
 
-    if articles:
+    articles = Articles.query.filter_by(author=session['username']).all()
+
+    if len(articles) > 0:
         return render_template("article.html", allArticles=articles)
     else:
         msg = f"Oops. User: {session['username']} does not have any article"
-        return redirect(url_for("dashboard.html", msg=msg, is_empty = True))
+        return redirect(url_for("dashboard", msg=msg, is_empty = True))
 
-@app.route('/articles/<string:id>')
+@app.route('/articles/<int:id>')
 def article_page(id):
-    requested_article = None
-
-    db.connect_database()
-    articles = db.get_articles(author=session['username'])
-    
-    for article in articles:
-        if article['id'] == id:
-            requested_article = article
-            return render_template("article_page.html", article=requested_article)
+        
+    requested_article = Articles.query.filter_by(id=id).first()
+    return render_template("article_page.html", article=requested_article)
   
 @app.route("/add_article", methods=['GET', 'POST'])
 @is_logged_in
 def add_article():
-    edit_form = ArticleForm(request.form)
+    new_form = ArticleForm(request.form)
 
-    if request.method == 'POST' and edit_form.validate_on_submit():
-        title = edit_form.title.data
-        post_body = edit_form.body.data
+    if request.method == 'POST' and new_form.validate_on_submit():
+        title = new_form.title.data
+        post_body = new_form.body.data
 
-        db.connect_database()
-        db.create_article(title=title, body=post_body, author=session['username'])
+        new_article = Articles(title=title, body=post_body, author=session['username'])
+        db.session.add(new_article)
+        db.session.commit()
 
         flash("Article created", 'success')
         return redirect(url_for("dashboard"))
 
-    return render_template("new_article.html", form=edit_form)  
+    return render_template("new_article.html", form=new_form)  
 
-@app.route("/edit_article/<string:id>", methods=['GET', 'POST'])
+@app.route("/edit_article/<string:article_id>", methods=['GET', 'POST'])
 @is_logged_in
-def edit_article(id):
-    db.connect_database()
-    article = db.get_article(id=id)
+def edit_article(article_id):
+    
+    # db.connect_database()
+    # article = db.get_article(id=id)
+    article = Articles.query.get_or_404(article_id)
 
-    edit_form = ArticleForm(request.form)
-    edit_form.title.data = article['title']
-    edit_form.body.data = article['body']
+    if article.author == session['username']:
 
-    if request.method == 'POST' and edit_form.validate_on_submit():
-        title = request.form['title']
-        post_body = request.form['body']
+        edit_form = ArticleForm(request.form)
+        edit_form.title.data = article.title
+        edit_form.body.data = article.body
 
-        db.connect_database()
-        db.update_article(id=id, title=title, body=post_body)
-                
-        flash("Article edited", 'success')
+        if request.method == 'POST' and edit_form.validate_on_submit():
+            title = request.form['title']
+            post_body = request.form['body']
+
+            # db.connect_database()
+            # db.update_article(id=id, title=title, body=post_body)
+
+            article.title = title
+            article.body = post_body
+            article.author = session['username']
+
+            db.session.add(article)
+            db.session.commit()
+                    
+            flash("Article edited", 'success')
+            return redirect(url_for("dashboard"))
+
+        return render_template("edit_article.html", form=edit_form)
+
+    else:
+        flash("Unauthorized access", 'danger')
         return redirect(url_for("dashboard"))
-
-    return render_template("edit_article.html", form=edit_form)
 
 @app.route("/delete_article/<int:id>", methods=['POST'])
 @is_logged_in
 def delete_article(id):
-    
-    db.connect_database()
-    db.delete_article(article_id=id)
+    # db.connect_database()
+    # db.delete_article(article_id=id)
+
+    article = Articles.query.get_or_404(id)
+
+    db.session.delete(article)
+    db.session.commit()
 
     flash("Article deleted", "success")
     return redirect(url_for('dashboard'))
