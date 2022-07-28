@@ -12,7 +12,7 @@ from passlib.hash import sha256_crypt
 load_dotenv()
 
 app = Flask(__name__)
-db.init_app(app)
+
 
 csrf = CSRFProtect(app=app)
 
@@ -22,7 +22,11 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL").replace("postg
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.permanent_session_lifetime = timedelta(hours=3)
 
+db.init_app(app)
 
+with app.app_context():
+    db.create_all()
+    
 def is_logged_in(f):
     @wraps(f)
     def wrapped_func(*args, **kwargs):
