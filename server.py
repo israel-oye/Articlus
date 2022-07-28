@@ -5,7 +5,7 @@ from datetime import timedelta
 from turtle import title
 from dotenv import load_dotenv
 from forms import RegistrationForm, ArticleForm
-from models import Articles, Users
+from models import Articles, Users, db
 from flask import Flask, abort, render_template, url_for, flash, redirect, request, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
@@ -15,16 +15,15 @@ from passlib.hash import sha256_crypt
 load_dotenv()
 
 app = Flask(__name__)
+db.init_app(app)
+
+csrf = CSRFProtect(app=app)
 
 app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
 app.config['WTF_CSRF_ENABLED'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///articlus_db.db"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.permanent_session_lifetime = timedelta(hours=3)
-
-
-csrf = CSRFProtect(app=app)
-db = SQLAlchemy(app)
 
 
 def is_logged_in(f):
@@ -56,14 +55,11 @@ def register():
         pwd = sha256_crypt.encrypt(str(input_form.password.data)) 
 
         user = Users.query.filter_by(username=uname).first()
-        # print(user)
+        
         if user is None:
             user = Users(name=nm, username=uname, email=mail, password=pwd)
             db.session.add(user)
             db.session.commit()
-
-        # db.connect_database()
-        # db.register_user(name=name, username=username, email=email, password=pwd)
 
             flash("You are now registered and can login", 'success')
             return redirect(url_for('login'))
@@ -75,13 +71,10 @@ def register():
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
-    # db.connect_database()
-
+    
     if request.method == 'POST':
         username = request.form['username']
         password_candidate = request.form['password']
-
-        # user_data = db.fetch_data(username)
 
         user_data = Users.query.filter_by(username=username).first()
 
@@ -110,8 +103,7 @@ def login():
 @app.route("/dashboard")
 @is_logged_in
 def dashboard():
-    # db.connect_database() 
-    # articles = db.get_articles(session['username'])
+    
     articles = Articles.query.filter_by(author=session['username']).all()
 
     if len(articles) > 0:
@@ -123,9 +115,6 @@ def dashboard():
 @app.route('/articles')
 @is_logged_in
 def articles():
-    
-    # db.connect_database()
-    # articles = db.get_articles(author=session['username'])
 
     articles = Articles.query.filter_by(author=session['username']).all()
 
@@ -163,8 +152,6 @@ def add_article():
 @is_logged_in
 def edit_article(article_id):
     
-    # db.connect_database()
-    # article = db.get_article(id=id)
     article = Articles.query.get_or_404(article_id)
 
     if article.author == session['username']:
@@ -176,9 +163,6 @@ def edit_article(article_id):
         if request.method == 'POST' and edit_form.validate_on_submit():
             title = request.form['title']
             post_body = request.form['body']
-
-            # db.connect_database()
-            # db.update_article(id=id, title=title, body=post_body)
 
             article.title = title
             article.body = post_body
@@ -199,16 +183,19 @@ def edit_article(article_id):
 @app.route("/delete_article/<int:id>", methods=['POST'])
 @is_logged_in
 def delete_article(id):
-    # db.connect_database()
-    # db.delete_article(article_id=id)
 
     article = Articles.query.get_or_404(id)
 
-    db.session.delete(article)
-    db.session.commit()
+    if article.author == session['username']:
 
-    flash("Article deleted", "success")
-    return redirect(url_for('dashboard'))
+        db.session.delete(article)
+        db.session.commit()
+
+        flash("Article deleted", "success")
+        return redirect(url_for('dashboard'))
+    else:
+        flash("Unauthorized access", 'danger')
+        return redirect(url_for('dashboard'))
 
 @app.route("/logout")
 @is_logged_in
