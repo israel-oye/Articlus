@@ -1,12 +1,10 @@
 import os
-import html
 from functools import wraps
 from datetime import timedelta
 from dotenv import load_dotenv
 from forms import RegistrationForm, ArticleForm
 from models import Articles, Users, db
 from flask import Flask, abort, render_template, url_for, flash, redirect, request, session
-from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
 from passlib.hash import sha256_crypt
 
@@ -20,7 +18,7 @@ csrf = CSRFProtect(app=app)
 
 app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
 app.config['WTF_CSRF_ENABLED'] = False
-app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///articlus_db.db"
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.permanent_session_lifetime = timedelta(hours=3)
 
