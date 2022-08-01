@@ -17,7 +17,7 @@ class Users(db.Model):
 class Articles(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200))
-    body = db.Column(db.String(1000))
+    body = db.Column(db.Text())
     author = db.Column(db.String(40))
     date_of_creation = db.Column(db.DateTime, default=datetime.utcnow())
 
