@@ -2,7 +2,7 @@
 <h1>
     Dashboard
 </h1>
-<small>Welcome {{session.username}}</small>
+<small>Welcome {{current_user.username}}</small>
 <br> {% if is_empty %}
 <a class="btn btn-success mt-1" href="{{url_for('add_article')}}" role="button">Add Article</a> {{pass}} {% else %}
 <a class="btn btn-success mt-1" href="{{url_for('add_article')}}" role="button">Add new article</a>

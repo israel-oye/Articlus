@@ -12,7 +12,7 @@
                     <a class="nav-link active" aria-current="page" href="/">Home</a>
                 </li>
 
-                {% if session.logged_in %}
+                {% if current_user.is_authenticated %}
                 <li class="nav-item px-3">
                     <a class="nav-link" href="/dashboard">Dashboard</a>
                 </li>

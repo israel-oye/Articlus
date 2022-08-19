@@ -4,7 +4,7 @@
     <p class="mt-4 lh-lg">Welcome to <a class="text-decoration-none link-light" href="/"><span class="fw-bolder font-monospace text-white-50">articlus.</span></a> Sign up today and express yourself in absolute privacy. Lorem Ipsum you think some, you write some and dolor sit
         amet. Built with Flask and Jinja 2.0
     </p>
-    {% if session.logged_in == NULL %}
+    {% if not current_user.is_authenticated %}
     <div class="pb-2">
         <a href="{{url_for('register')}}" class="btn btn-primary btn-lg mx-1 mt-5">Register</a>
         <a href="{{url_for('login')}}" class="btn btn-success btn-lg mx-1 mt-5">Hop in</a> {% endif %}
