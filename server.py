@@ -54,7 +54,7 @@ def load_user(user_id):
     return Users.query.get(user_id)
 
 def get_google_provider_cfg():
-    return requests.get(GOOGLE_DISCOVERY_URL)
+    return requests.get(GOOGLE_DISCOVERY_URL).json()
 
 @app.route('/')
 def home():
