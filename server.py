@@ -136,7 +136,7 @@ def auth():
         redirect_uri=request.base_url + "/callback",
         scope=["openid", "email", "profile"]
     )
-    return request_uri
+    return redirect(request_uri)
 
 @app.route("/auth/callback")
 def callback():
