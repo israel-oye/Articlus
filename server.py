@@ -78,9 +78,12 @@ def register():
         mail = input_form.email.data
         pwd = sha256_crypt.encrypt(str(input_form.password.data)) 
 
-        user = Users.query.filter_by(username=uname).first()
+        user_exists = False
         
-        if user is None:
+        if Users.query.filter_by(email=mail).first() or Users.query.filter_by(username=uname).first():
+            user_exists = True
+        
+        if not user_exists:
             user = Users(username=uname, email=mail, password=pwd)
             db.session.add(user)
             db.session.commit()
@@ -89,7 +92,7 @@ def register():
             flash("Registered successfully", 'success')
             return redirect(url_for('dashboard'))
         else:
-            flash("Username or email is taken!", "danger")
+            flash("Email or username is taken!", "danger")
             return redirect(url_for('register'))
 
     return render_template("register.html", form=input_form)

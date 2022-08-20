@@ -25,8 +25,8 @@
                 <small class="form-text text-muted">{{ error }}</small> {% endfor %}
             </div>
 
-            <input type="submit" value="Sign Up" class="btn btn-primary">
-
+            <input type="submit" formaction="/register" value="Sign Up" class="btn btn-primary">
+            <button type="submit" formaction="/auth" class="btn btn-outline-danger mt-2"><i class="fa-brands fa-google"></i> Sign up with Google</button>
         </form>
     </div>
 </div>
