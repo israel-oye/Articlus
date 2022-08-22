@@ -19,7 +19,7 @@ class RegistrationForm(Form):
             raise ValidationError("Username already exists, please try again.")
 
     def validate_email(self, email):
-        user = Users.query.filter_by(email=email).first()
+        user = Users.query.filter_by(email=email.data).first()
         if user:
             raise ValidationError("Email is taken!")
 
