@@ -7,11 +7,11 @@
     {% if not current_user.is_authenticated %}
     <div class="pb-2">
         <a href="{{url_for('register')}}" class="btn btn-primary btn-lg mx-1 mt-5">Register</a>
-        <a href="{{url_for('login')}}" class="btn btn-success btn-lg mx-1 mt-5">Hop in</a> {% endif %}
+        <a href="{{url_for('login')}}" class="btn btn-success btn-lg mx-1 mt-5">Hop in</a>
         <form action="" method="post">
             <input type="hidden" name="csrf-token" value="{{ csrf_token() }}">
-            <button type="submit" formaction="/auth" class="btn btn-danger btn-lg mt-5 mx-1"><i class="fa-brands fa-google"></i> Sign in with Google</button>
-        </form>
+            <button type="submit" formaction="/auth" class="btn btn-danger btn-lg mt-2 mx-1"><i class="fa-brands fa-google"></i> Sign in with Google</button>
+        </form>{% endif %}
     </div>
 
 </div>
