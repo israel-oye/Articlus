@@ -38,7 +38,7 @@ class Users(db.Model, UserMixin):
         self.password = sha256_crypt.encrypt(pwd)
 
     def password_is_correct(self, pwd_candidate):
-        return sha256_crypt.verify(self.password, pwd_candidate)
+        return sha256_crypt.verify(pwd_candidate, self.password)
 
 class Articles(db.Model):
     id = db.Column(db.Integer, primary_key=True)
