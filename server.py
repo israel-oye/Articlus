@@ -29,6 +29,7 @@ GOOGLE_DISCOVERY_URL = (
 )
 
 login_manager = LoginManager()
+login_manager.login_view = "login"
 login_manager.login_message = (u"Unauthorized, please login")
 login_manager.login_message_category = "danger"
 login_manager.needs_refresh_message = (u"Session timedout, please re-login")
