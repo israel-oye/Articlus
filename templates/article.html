@@ -14,7 +14,7 @@
     {% for article in allArticles %}
     <li class="list-group-item bg-transparent mt-2 mb-2">
         <a class="text-decoration-none text-underline-hover" href="articles/{{article.id}}">
-            <h3 class="text-white-50">Article {{article.id}}</h3>
+            <h3 class="text-white-50">{{article.title}}</h3>
         </a>
         <small class="text-light">By <a class="text-white-50 text-decoration-underline" href="{{url_for('dashboard')}}">{{article.author}}</a></small>
     </li>
