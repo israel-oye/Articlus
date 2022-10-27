@@ -215,12 +215,16 @@ def articles():
         msg = f"Oops. User: {current_user.username} does not have any article"
         return redirect(url_for("dashboard", msg=msg, is_empty = True))
 
-@app.route('/articles/<int:id>')
+@app.route('/<string:username>/articles/<int:id>')
 @login_required
-def article_page(id):
+def article_page(id, username=current_user.username):
         
     requested_article = Articles.query.filter_by(id=id).first()
-    return render_template("article_page.html", article=requested_article)
+    if requested_article.author == current_user.username:
+        return render_template("article_page.html", article=requested_article)
+    else:
+        flash("Don't be an intruder!", "warning")
+        return redirect(url_for("dashboard"))
   
 @app.route("/add_article", methods=['GET', 'POST'])
 @login_required
@@ -241,6 +245,7 @@ def add_article():
     return render_template("new_article.html", form=new_form)  
 
 @app.route("/edit_article/<string:article_id>", methods=['GET', 'POST'])
+@login_required
 def edit_article(article_id):
     
     article = Articles.query.get_or_404(article_id)
@@ -272,6 +277,7 @@ def edit_article(article_id):
         return redirect(url_for("dashboard"))
 
 @app.route("/delete_article/<int:id>", methods=['POST'])
+@login_required
 def delete_article(id):
 
     article = Articles.query.get_or_404(id)
