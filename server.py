@@ -217,9 +217,9 @@ def articles():
         msg = f"Oops. User: {current_user.username} does not have any article"
         return redirect(url_for("dashboard", msg=msg, is_empty = True))
 
-@app.route('/<string:username>/articles/<int:id>')
+@app.route('/articles/<int:id>')
 @login_required
-def article_page(id, username=session.get("username")):
+def article_page(id):
         
     requested_article = Articles.query.filter_by(id=id).first()
     if requested_article.author == current_user.username:
