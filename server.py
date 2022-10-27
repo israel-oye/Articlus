@@ -18,7 +18,7 @@ csrf = CSRFProtect(app=app)
 
 app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
 app.config['WTF_CSRF_ENABLED'] = False
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL").replace("postgres://", "postgresql://", 1)
+app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///"+os.getenv("DATABASE_URL")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 
@@ -44,6 +44,7 @@ with app.app_context():
 
 client = WebApplicationClient(GOOGLE_CLIENT_ID)
 
+c_username = None
 
 @app.before_request
 def before_request():
@@ -52,9 +53,7 @@ def before_request():
 
 @login_manager.user_loader
 def load_user(user_id):
-    user = Users.query.get(user_id)
-    session["username"] = user.username if user else None
-    return user
+    return Users.query.get(user_id)
 
 def get_google_provider_cfg():
     return requests.get(GOOGLE_DISCOVERY_URL).json()
@@ -118,6 +117,10 @@ def login():
 
                 app.logger.info("Password matched")
                 login_user(user=user_data)
+
+                session["username"] = current_user.username
+                global c_username
+                c_username = current_user.username
 
                 flash("You are now logged in", 'success')
                 return redirect(url_for('dashboard'))
@@ -189,7 +192,7 @@ def callback():
         db.session.commit()
 
     login_user(user)
-
+    session["username"] = current_user.username
     return redirect(url_for('dashboard'))
 
 
@@ -219,18 +222,19 @@ def articles():
 
 @app.route('/<string:username>/articles/<int:id>')
 @login_required
-def article_page(id, username=session.get("username")):
+def article_page(id, username=c_username):
         
     requested_article = Articles.query.filter_by(id=id).first()
     if requested_article.author == current_user.username:
+        app.logger.info(c_username)
         return render_template("article_page.html", article=requested_article)
     else:
         flash("Don't be an intruder!", "warning")
         return redirect(url_for("dashboard"))
   
-@app.route("/add_article", methods=['GET', 'POST'])
+@app.route("/<string:username>/add_article", methods=['GET', 'POST'])
 @login_required
-def add_article():
+def add_article(username=c_username):
     new_form = ArticleForm(request.form)
 
     if request.method == 'POST' and new_form.validate_on_submit():
@@ -246,9 +250,9 @@ def add_article():
 
     return render_template("new_article.html", form=new_form)  
 
-@app.route("/edit_article/<string:article_id>", methods=['GET', 'POST'])
+@app.route("/<string:username>/edit_article/<string:article_id>", methods=['GET', 'POST'])
 @login_required
-def edit_article(article_id):
+def edit_article(article_id, username=c_username):
     
     article = Articles.query.get_or_404(article_id)
 
@@ -278,9 +282,9 @@ def edit_article(article_id):
         flash("Unauthorized access", 'danger')
         return redirect(url_for("dashboard"))
 
-@app.route("/delete_article/<int:id>", methods=['POST'])
+@app.route("/<string:username>/delete_article/<int:id>", methods=['POST'])
 @login_required
-def delete_article(id):
+def delete_article(id, username=c_username):
 
     article = Articles.query.get_or_404(id)
 
