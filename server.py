@@ -253,7 +253,7 @@ def edit_article(article_id):
     article = Articles.query.get_or_404(article_id)
 
     if article.author == current_user.username:
-
+        #
         edit_form = ArticleForm(request.form)
         edit_form.title.data = article.title
         edit_form.body.data = article.body
