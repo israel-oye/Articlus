@@ -52,7 +52,9 @@ def before_request():
 
 @login_manager.user_loader
 def load_user(user_id):
-    return Users.query.get(user_id)
+    user = Users.query.get(user_id)
+    session["username"] = user.username if user else None
+    return user
 
 def get_google_provider_cfg():
     return requests.get(GOOGLE_DISCOVERY_URL).json()
@@ -217,7 +219,7 @@ def articles():
 
 @app.route('/<string:username>/articles/<int:id>')
 @login_required
-def article_page(id, username=current_user.username):
+def article_page(id, username=session.get("username")):
         
     requested_article = Articles.query.filter_by(id=id).first()
     if requested_article.author == current_user.username:
