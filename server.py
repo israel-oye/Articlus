@@ -2,7 +2,7 @@ import os, requests, json
 from datetime import timedelta
 from dotenv import load_dotenv
 from forms import RegistrationForm, ArticleForm
-from models import Articles, Users, db, migrate
+from models import Article, User, db, migrate
 from flask import Flask, abort, render_template, url_for, flash, redirect, request, session
 from flask_login import LoginManager, current_user, login_required, login_user, logout_user
 from flask_wtf.csrf import CSRFProtect
@@ -52,7 +52,7 @@ def before_request():
 
 @login_manager.user_loader
 def load_user(user_id):
-    return Users.query.get(user_id)
+    return User.query.get(user_id)
 
 def get_google_provider_cfg():
     return requests.get(GOOGLE_DISCOVERY_URL).json()
@@ -195,7 +195,7 @@ def callback():
 @login_required
 def dashboard():
     
-    articles = Articles.query.filter_by(author=current_user.username).all()
+    articles = Article.query.filter_by(author=current_user.username).all()
 
     if len(articles) > 0:
         return render_template("dashboard.html", user_articles=articles)
@@ -207,7 +207,7 @@ def dashboard():
 @login_required
 def articles():
 
-    articles = Articles.query.filter_by(author=current_user.username).all()
+    articles = Article.query.filter_by(author=current_user.username).all()
 
     if len(articles) > 0:
         return render_template("article.html", allArticles=articles)
@@ -219,7 +219,7 @@ def articles():
 @login_required
 def article_page(id):
         
-    requested_article = Articles.query.filter_by(id=id).first()
+    requested_article = Article.query.filter_by(id=id).first()
     return render_template("article_page.html", article=requested_article)
   
 @app.route("/add_article", methods=['GET', 'POST'])
@@ -231,7 +231,7 @@ def add_article():
         title = new_form.title.data
         post_body = new_form.body.data
 
-        new_article = Articles(title=title, body=post_body, author=current_user.username)
+        new_article = Article(title=title, body=post_body, author=current_user.username)
         db.session.add(new_article)
         db.session.commit()
 
@@ -243,7 +243,7 @@ def add_article():
 @app.route("/edit_article/<string:article_id>", methods=['GET', 'POST'])
 def edit_article(article_id):
     
-    article = Articles.query.get_or_404(article_id)
+    article = Article.query.get_or_404(article_id)
 
     if article.author == current_user.username:
 
@@ -274,7 +274,7 @@ def edit_article(article_id):
 @app.route("/delete_article/<int:id>", methods=['POST'])
 def delete_article(id):
 
-    article = Articles.query.get_or_404(id)
+    article = Article.query.get_or_404(id)
 
     if article.author == current_user.username:
 
