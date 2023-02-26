@@ -219,6 +219,9 @@ def articles():
 def article_page(id):
         
     requested_article = Article.query.filter_by(id=id).first()
+    if requested_article.author_id != current_user.id:
+        flash("Don't be an intruder O_O", category="dark")
+        return redirect(url_for('dashboard'))
     return render_template("article_page.html", article=requested_article)
   
 @app.route("/add_article", methods=['GET', 'POST'])
