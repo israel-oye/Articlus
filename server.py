@@ -81,11 +81,11 @@ def register():
 
         user_exists = False
         
-        if Users.query.filter_by(email=mail).first() or Users.query.filter_by(username=uname).first():
+        if User.query.filter_by(email=mail).first() or User.query.filter_by(username=uname).first():
             user_exists = True
         
         if not user_exists:
-            user = Users(username=uname, email=mail, password=pwd)
+            user = User(username=uname, email=mail, password=pwd)
             db.session.add(user)
             db.session.commit()
             login_user(user)
@@ -107,7 +107,7 @@ def login():
         email = request.form['email']
         password_candidate = request.form['password']
 
-        user_data = Users.query.filter_by(email=email).first()
+        user_data = User.query.filter_by(email=email).first()
 
         if user_data:    
             password = user_data.password
@@ -122,7 +122,6 @@ def login():
             else:
                 error = "Incorrect password"
                 return render_template("login.html", error=error)
-            
         else:
             error = "User not found"
             return render_template("login.html", error=error)
@@ -178,10 +177,10 @@ def callback():
         flash("Email not verified, please try again...", "danger")
         return redirect(url_for('login'))
 
-    user = Users.query.filter_by(email=u_mail).first()
+    user = User.query.filter_by(email=u_mail).first()
 
     if user is None:
-        user = Users(username=u_name, email=u_mail)
+        user = User(username=u_name, email=u_mail)
         user.set_password(u_gid)
         db.session.add(user)
         db.session.commit()
@@ -195,7 +194,7 @@ def callback():
 @login_required
 def dashboard():
     
-    articles = Article.query.filter_by(author=current_user.username).all()
+    articles = current_user.articles
 
     if len(articles) > 0:
         return render_template("dashboard.html", user_articles=articles)
@@ -207,7 +206,7 @@ def dashboard():
 @login_required
 def articles():
 
-    articles = Article.query.filter_by(author=current_user.username).all()
+    articles = current_user.articles
 
     if len(articles) > 0:
         return render_template("article.html", allArticles=articles)
@@ -231,7 +230,7 @@ def add_article():
         title = new_form.title.data
         post_body = new_form.body.data
 
-        new_article = Article(title=title, body=post_body, author=current_user.username)
+        new_article = Article(title=title, body=post_body, author=current_user)
         db.session.add(new_article)
         db.session.commit()
 
@@ -241,11 +240,16 @@ def add_article():
     return render_template("new_article.html", form=new_form)  
 
 @app.route("/edit_article/<string:article_id>", methods=['GET', 'POST'])
+@login_required
 def edit_article(article_id):
+    try:
+        article = Article.query.get_or_404(article_id)
+    except:
+        msg = "Sorry, that article does not exist."
+        flash(msg, category="info")
+        return redirect(url_for("dashboard"))
     
-    article = Article.query.get_or_404(article_id)
-
-    if article.author == current_user.username:
+    if article.author == current_user:
 
         edit_form = ArticleForm(request.form)
         edit_form.title.data = article.title
@@ -257,7 +261,7 @@ def edit_article(article_id):
 
             article.title = title
             article.body = post_body
-            article.author = current_user.username
+            article.author = current_user
 
             db.session.add(article)
             db.session.commit()
@@ -266,17 +270,20 @@ def edit_article(article_id):
             return redirect(url_for("dashboard"))
 
         return render_template("edit_article.html", form=edit_form)
-
     else:
-        flash("Unauthorized access", 'danger')
+        flash("You are not permitted to do that...", 'danger')
         return redirect(url_for("dashboard"))
 
 @app.route("/delete_article/<int:id>", methods=['POST'])
-def delete_article(id):
-
-    article = Article.query.get_or_404(id)
-
-    if article.author == current_user.username:
+@login_required
+def delete_article(article_id):
+    try:
+        article = Article.query.get_or_404(article_id)
+    except:
+        msg = "Sorry, that article does not exist."
+        flash(msg, category="info")
+        return redirect(url_for("dashboard"))
+    if article.author == current_user:
 
         db.session.delete(article)
         db.session.commit()

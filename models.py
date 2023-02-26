@@ -18,7 +18,7 @@ class User(db.Model, UserMixin):
     articles = db.relationship("Article", back_populates="author")
 
     def __repr__(self) -> str:
-        return super().__repr__()
+        return f"{self.username}"
 
     @property
     def is_authenticated(self):
